@@ -1,0 +1,503 @@
+```html
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>小巷食堂 · 点餐</title>
+<style>
+  :root{
+    --bg:#FFF7F0; --card:#FFFFFF; --ink:#2C211A; --ink2:#9A8577;
+    --line:#F1E3D6; --accent:#EF6C33; --soft:#FFEBDE; --dark:#241A14;
+  }
+  {box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(120% 55% at 105% -5%, #FFDCC2 0%, rgba(255,220,194,0) 62%),
+      radial-gradient(80% 45% at -10% 8%, #FFF0E2 0%, rgba(255,240,226,0) 60%),
+      var(--bg);
+    min-height:100vh;
+    padding:22px 16px 118px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .hd-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  #shop{font-size:23px;font-weight:700;letter-spacing:.5px}
+  #tag{font-size:13px;color:var(--ink2);margin-top:5px}
+  #badge{font-size:11px;color:#3E9B5C;background:#E8F6EC;border-radius:999px;padding:5px 10px;white-space:nowrap;flex:0 0 auto;margin-top:3px}
+  .langs{display:flex;gap:6px;margin-top:16px}
+  .lang{
+    border:1px solid var(--line);background:#fff;color:var(--ink2);
+    font-size:12.5px;padding:6px 13px;border-radius:999px;font-weight:500;
+    transition:.18s;font-family:inherit;
+  }
+  .lang.on{background:var(--dark);border-color:var(--dark);color:#fff}
+  .search{
+    margin-top:12px;display:flex;align-items:center;gap:8px;
+    background:#fff;border:1px solid var(--line);border-radius:16px;padding:11px 14px;
+    box-shadow:0 4px 14px rgba(140,95,60,.05);
+  }
+  .search span{font-size:14px;opacity:.5}
+  .search input{
+    border:0;outline:0;background:transparent;flex:1;font-size:14.5px;color:var(--ink);
+    font-family:inherit;
+  }
+  .search input::placeholder{color:#BCA797}
+  .cats{display:flex;gap:8px;overflow-x:auto;padding:16px 2px 4px;scrollbar-width:none}
+  .cats::-webkit-scrollbar{display:none}
+  .chip{
+    border:1px solid var(--line);background:#fff;color:var(--ink2);
+    font-size:13px;padding:7px 15px;border-radius:999px;white-space:nowrap;font-family:inherit;
+    transition:.18s;
+  }
+  .chip.on{background:var(--dark);border-color:var(--dark);color:#fff}
+  .list{margin-top:10px;display:flex;flex-direction:column;gap:10px}
+  .item{
+    display:flex;gap:13px;align-items:center;
+    background:var(--card);border:1px solid rgba(241,227,214,.9);
+    border-radius:19px;padding:12px;
+    box-shadow:0 6px 18px rgba(140,95,60,.06);
+  }
+  .thumb{
+    width:64px;height:64px;border-radius:16px;flex:0 0 auto;
+    display:grid;place-items:center;font-size:29px;
+  }
+  .info{flex:1;min-width:0}
+  .name{font-size:15px;font-weight:600;line-height:1.3}
+  .desc{font-size:12px;color:var(--ink2);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .price{font-size:14px;font-weight:700;color:var(--accent);margin-top:6px}
+  .add{
+    width:34px;height:34px;flex:0 0 auto;border:0;border-radius:12px;
+    background:var(--accent);color:#fff;font-size:19px;line-height:1;
+    display:grid;place-items:center;font-family:inherit;
+  }
+  .add:active{transform:scale(.92)}
+  .stepper{
+    display:flex;align-items:center;gap:6px;background:var(--soft);
+    border-radius:12px;padding:3px;flex:0 0 auto;
+  }
+  .stepper button{
+    width:27px;height:27px;border:0;border-radius:9px;background:#fff;
+    color:var(--accent);font-size:15px;font-weight:700;font-family:inherit;
+    display:grid;place-items:center;
+  }
+  .stepper span{min-width:15px;text-align:center;font-size:13.5px;font-weight:700}
+  .empty{margin-top:26px;text-align:center;color:var(--ink2);font-size:13.5px}
+  .foot{margin-top:20px;text-align:center;font-size:11.5px;color:#C0AC9C}
+  .bar{
+    position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));
+    background:var(--dark);color:#fff;border-radius:20px;padding:11px 13px;
+    display:flex;align-items:center;gap:11px;
+    box-shadow:0 14px 34px rgba(40,20,10,.3);
+    transform:translateY(150%);transition:transform .3s cubic-bezier(.2,.85,.2,1);z-index:30;
+  }
+  .bar.show{transform:none}
+  .bar .cnt{
+    background:rgba(255,255,255,.15);border-radius:12px;padding:7px 11px;font-size:12.5px;white-space:nowrap;
+  }
+  .bar .sum{flex:1;min-width:0;line-height:1.25}
+  .bar .sum span{display:block;font-size:10.5px;color:rgba(255,255,255,.6);letter-spacing:.4px}
+  .bar .sum b{font-size:16.5px}
+  .bar .go{
+    border:0;background:var(--accent);color:#fff;font-family:inherit;
+    font-size:14px;font-weight:600;padding:11px 17px;border-radius:14px;white-space:nowrap;
+  }
+  .backdrop{
+    position:fixed;inset:0;background:rgba(30,18,12,.42);z-index:40;
+    opacity:0;pointer-events:none;transition:opacity .25s;
+    -webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);
+  }
+  .backdrop.show{opacity:1;pointer-events:auto}
+  .sheet{
+    position:fixed;left:0;right:0;bottom:0;z-index:41;
+    background:var(--bg);border-radius:26px 26px 0 0;
+    padding:10px 18px calc(22px + env(safe-area-inset-bottom));
+    max-height:84vh;overflow:auto;
+    transform:translateY(100%);transition:transform .32s cubic-bezier(.2,.85,.2,1);
+    box-shadow:0 -10px 40px rgba(60,35,20,.18);
+  }
+  .sheet.show{transform:none}
+  .grab{width:38px;height:4px;border-radius:9px;background:#E2D2C4;margin:0 auto 14px}
+  .sheet h3{margin:0 0 14px;font-size:17px}
+  .row{
+    display:flex;align-items:center;gap:12px;padding:11px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .row:last-child{border-bottom:0}
+  .row .rn{flex:1;min-width:0;font-size:14.5px;font-weight:500}
+  .row .rp{font-size:12.5px;color:var(--ink2);margin-top:2px}
+  .totrow{display:flex;align-items:baseline;justify-content:space-between;margin-top:16px}
+  .totrow span{font-size:13px;color:var(--ink2)}
+  .totrow b{font-size:22px;color:var(--accent)}
+  .actions{display:flex;gap:10px;margin-top:16px}
+  .btn{
+    flex:1;border:0;border-radius:16px;font-family:inherit;font-size:15px;font-weight:600;
+    padding:14px;text-align:center;
+  }
+  .btn.ghost{background:#fff;color:var(--ink2);border:1px solid var(--line)}
+  .btn.main{background:var(--accent);color:#fff}
+  .note{font-size:11.5px;color:#BFAB9B;text-align:center;margin-top:14px;line-height:1.5}
+  .done{text-align:center;padding:14px 0 4px}
+  .done .tick{
+    width:58px;height:58px;margin:0 auto 12px;border-radius:50%;
+    background:#E8F6EC;color:#3E9B5C;display:grid;place-items:center;font-size:28px;
+  }
+  .done h2{margin:0;font-size:19px}
+  .done .no{margin-top:7px;font-size:12.5px;color:var(--ink2);letter-spacing:.5px}
+  .toast{
+    position:fixed;left:50%;bottom:104px;z-index:60;pointer-events:none;
+    background:rgba(36,26,20,.93);color:#fff;font-size:13px;
+    padding:9px 17px;border-radius:999px;max-width:80vw;text-align:center;
+    opacity:0;transform:translate(-50%,16px);transition:.26s;
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+  @media (prefers-color-scheme: dark){
+    :root{--bg:#1B1512;--card:#241C17;--ink:#F5EAE2;--ink2:#A08D7F;--line:#3A2C24;--soft:#3A2A20}
+    body{background:
+      radial-gradient(120% 55% at 105% -5%, #3B2418 0%, rgba(59,36,24,0) 62%),
+      radial-gradient(80% 45% at -10% 8%, #2A1D16 0%, rgba(42,29,22,0) 60%),
+      var(--bg)}
+    .lang,.search,.chip,.item,.btn.ghost{background:var(--card)}
+    .search input{color:var(--ink)}
+    #badge{background:#1E3527;color:#7FC79A}
+    .done .tick{background:#1E3527}
+    .stepper button{background:#3A2A20;color:#FF9A6B}
+    .grab{background:#4A392F}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hd-top">
+    <div>
+      <div id="shop">小巷食堂</div>
+      <div id="tag">今天想吃点什么</div>
+    </div>
+    <div id="badge">营业中</div>
+  </div>
+  <div class="langs">
+    <button class="lang" data-act="lang" data-lang="zh">中文</button>
+    <button class="lang" data-act="lang" data-lang="en">English</button>
+    <button class="lang" data-act="lang" data-lang="id">Bahasa</button>
+  </div>
+  <div class="search">
+    <span>🔍</span>
+    <input id="q" type="text" placeholder="搜菜名，或者凭心情">
+  </div>
+</header>
+
+<div class="cats" id="cats"></div>
+<div class="list" id="list"></div>
+
+<div class="bar" id="bar"></div>
+<div class="backdrop" id="backdrop" data-act="close"></div>
+<div class="sheet" id="sheet"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  var MENU = [
+    {id:'m1',cat:'main',h:18,e:'🍜',p:38000,
+      n:{zh:'招牌牛肉面',en:'Signature Beef Noodles',id:'Mie Sapi Andalan'},
+      d:{zh:'炖了六小时的汤，手切牛肉',en:'Six-hour broth, hand-cut beef',id:'Kaldu enam jam, daging iris tangan'}},
+    {id:'m2',cat:'main',h:42,e:'🍚',p:28000,
+      n:{zh:'蛋炒饭',en:'Egg Fried Rice',id:'Nasi Goreng Telur'},
+      d:{zh:'锅气足，葱多一点',en:'Wok-fried, extra scallion',id:'Wangi wajan, daun bawang lebih'}},
+    {id:'m3',cat:'main',h:32,e:'🍛',p:35000,
+      n:{zh:'咖喱鸡饭',en:'Chicken Curry Rice',id:'Nasi Kari Ayam'},
+      d:{zh:'椰奶底的黄咖喱',en:'Yellow curry with coconut milk',id:'Kari kuning bersantan'}},
+    {id:'m4',cat:'main',h:50,e:'🍝',p:30000,
+      n:{zh:'鸡丝凉面',en:'Cold Sesame Noodles',id:'Mie Dingin Wijen'},
+      d:{zh:'麻酱、黄瓜丝，夏天吃最合适',en:'Sesame sauce, shredded cucumber',id:'Saus wijen, timun serut'}},
+    {id:'s1',cat:'snack',h:24,e:'🍗',p:22000,
+      n:{zh:'炸鸡块',en:'Crispy Chicken Bites',id:'Ayam Goreng Krispi'},
+      d:{zh:'外壳脆，里面还带汁',en:'Crisp outside, juicy inside',id:'Renyah luar, lembut dalam'}},
+    {id:'s2',cat:'snack',h:38,e:'🌯',p:18000,
+      n:{zh:'蔬菜春卷',en:'Vegetable Spring Rolls',id:'Lumpia Sayur'},
+      d:{zh:'现炸的，两条一份',en:'Freshly fried, two per order',id:'Baru digoreng, dua per porsi'}},
+    {id:'s3',cat:'snack',h:28,e:'🍢',p:25000,
+      n:{zh:'花生酱串',en:'Satay with Peanut Sauce',id:'Sate Bumbu Kacang'},
+      d:{zh:'炭火烤的，酱是甜的',en:'Charcoal grilled, sweet sauce',id:'Bakar arang, bumbu manis'}},
+    {id:'s4',cat:'snack',h:14,e:'🍘',p:15000,
+      n:{zh:'香脆天贝',en:'Crispy Tempeh',id:'Tempe Goreng'},
+      d:{zh:'本地豆饼，撒了点盐',en:'Local soy cake, lightly salted',id:'Tempe lokal, sedikit garam'}},
+    {id:'d1',cat:'drink',h:190,e:'🍋',p:12000,
+      n:{zh:'冰柠檬茶',en:'Iced Lemon Tea',id:'Es Teh Lemon'},
+      d:{zh:'不额外加糖',en:'No added sugar',id:'Tanpa gula tambahan'}},
+    {id:'d2',cat:'drink',h:28,e:'🧋',p:20000,
+      n:{zh:'黑糖珍奶',en:'Brown Sugar Milk Tea',id:'Boba Gula Aren'},
+      d:{zh:'珍珠现煮，只能做冰的',en:'Fresh pearls, iced only',id:'Boba baru, hanya dingin'}},
+    {id:'d3',cat:'drink',h:30,e:'🍊',p:16000,
+      n:{zh:'鲜榨橙汁',en:'Fresh Orange Juice',id:'Jus Jeruk Segar'},
+      d:{zh:'现榨，不加冰',en:'Squeezed to order, no ice',id:'Diperas saat dipesan'}},
+    {id:'d4',cat:'drink',h:24,e:'☕',p:18000,
+      n:{zh:'冰咖啡',en:'Iced Coffee',id:'Kopi Susu Dingin'},
+      d:{zh:'本地豆，偏甜',en:'Local beans, on the sweet side',id:'Biji lokal, agak manis'}},
+    {id:'t1',cat:'dessert',h:38,e:'🥭',p:26000,
+      n:{zh:'芒果糯米饭',en:'Mango Sticky Rice',id:'Ketan Mangga'},
+      d:{zh:'椰浆淋在热糯米上',en:'Coconut cream over warm rice',id:'Santan di atas ketan hangat'}},
+    {id:'t2',cat:'dessert',h:180,e:'🥥',p:18000,
+      n:{zh:'椰奶西米露',en:'Coconut Sago',id:'Sagu Kelapa'},
+      d:{zh:'冷的，小小一碗',en:'Chilled, small bowl',id:'Dingin, mangkuk kecil'}}
+  ];
+
+var CATS = ['all','main','snack','drink','dessert'];
+
+var T = {
+    zh:{shop:'小巷食堂',tag:'今天想吃点什么',open:'营业中',search:'搜菜名，或者凭心情',
+        all:'全部',main:'主食',snack:'小吃',drink:'饮料',dessert:'甜点',
+        empty:'这个分类还是空的',cart:'购物车',emptyCart:'还没往篮子里放东西',
+        total:'合计',checkout:'去结算',clear:'清空',unit:'件',
+        added:'已加入',ordered:'下单成功',no:'订单号',again:'再来一单',
+        note:'演示菜单 · 不会真的做出来，也不会真的送到'},
+    en:{shop:'Alley Kitchen',tag:'What do you feel like today?',open:'Open',search:'Search a dish, or a mood',
+        all:'All',main:'Mains',snack:'Snacks',drink:'Drinks',dessert:'Desserts',
+        empty:'Nothing in this category yet',cart:'Your tray',emptyCart:'Your tray is empty',
+        total:'Total',checkout:'Checkout',clear:'Clear',unit:'items',
+        added:'Added',ordered:'Order placed',no:'Order',again:'Order again',
+        note:'Demo menu · nothing will actually be cooked or delivered'},
+    id:{shop:'Dapur Gang',tag:'Hari ini mau makan apa?',open:'Buka',search:'Cari menu, atau suasana hati',
+        all:'Semua',main:'Utama',snack:'Camilan',drink:'Minuman',dessert:'Manis',
+        empty:'Belum ada di kategori ini',cart:'Keranjang',emptyCart:'Keranjang masih kosong',
+        total:'Total',checkout:'Bayar',clear:'Kosongkan',unit:'item',
+        added:'Ditambahkan',ordered:'Pesanan diterima',no:'Nomor',again:'Pesan lagi',
+        note:'Menu demo · tidak ada yang benar-benar dimasak atau diantar'}
+  };
+
+var KEY = 'alley.order.v1';
+  var S = {lang:'zh', cat:'all', q:'', cart:{}, order:null};
+
+function load(){
+    try{
+      var raw = localStorage.getItem(KEY);
+      if(raw){
+        var o = JSON.parse(raw);
+        if(o && typeof o === 'object'){
+          S.lang = o.lang || 'zh';
+          S.cat = o.cat || 'all';
+          S.q = o.q || '';
+          S.cart = o.cart || {};
+          S.order = null;
+        }
+      }
+    }catch(e){}
+  }
+  function save(){
+    try{ localStorage.setItem(KEY, JSON.stringify({lang:S.lang,cat:S.cat,q:S.q,cart:S.cart})); }catch(e){}
+  }
+  function L(){ return T[S.lang]; }
+  function money(n){
+    return 'Rp ' + String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+  }
+  function find(id){
+    for(var i=0;i<MENU.length;i++){ if(MENU[i].id===id) return MENU[i]; }
+    return null;
+  }
+  function qty(){ var s=0; for(var k in S.cart){ s += S.cart[k]||0; } return s; }
+  function total(){
+    var s=0; for(var k in S.cart){ var it=find(k); if(it) s += it.pS.cart[k]; }
+    return s;
+  }
+  function $(sel){ return document.querySelector(sel); }
+
+function setTexts(){
+    var t = L();
+    $('#shop').textContent = t.shop;
+    $('#tag').textContent = t.tag;
+    $('#badge').textContent = t.open;
+    $('#q').placeholder = t.search;
+    document.documentElement.lang = S.lang === 'zh' ? 'zh-Hans' : S.lang;
+    var btns = document.querySelectorAll('.lang');
+    for(var i=0;i<btns.length;i++){
+      btns[i].className = 'lang' + (btns[i].getAttribute('data-lang')===S.lang ? ' on' : '');
+    }
+  }
+
+function renderCats(){
+    var t = L(), html = '';
+    for(var i=0;i<CATS.length;i++){
+      var c = CATS[i];
+      html += '<button class="chip' + (S.cat===c?' on':'') + '" data-act="cat" data-id="' + c + '">' + t[c] + '</button>';
+    }
+    $('#cats').innerHTML = html;
+  }
+
+function visible(){
+    var q = S.q.trim().toLowerCase(), out = [];
+    for(var i=0;i<MENU.length;i++){
+      var it = MENU[i];
+      if(S.cat !== 'all' && it.cat !== S.cat) continue;
+      if(q){
+        var hay = (it.n[S.lang] + ' ' + it.d[S.lang]).toLowerCase();
+        if(hay.indexOf(q) < 0) continue;
+      }
+      out.push(it);
+    }
+    return out;
+  }
+
+function renderList(){
+    var t = L(), items = visible(), html = '';
+    for(var i=0;i<items.length;i++){
+      var it = items[i], q = S.cart[it.id] || 0;
+      var act = q > 0
+        ? '<div class="stepper"><button data-act="dec" data-id="' + it.id + '">−</button><span>' + q + '</span><button data-act="inc" data-id="' + it.id + '">+</button></div>'
+        : '<button class="add" data-act="add" data-id="' + it.id + '">+</button>';
+      html += '<article class="item">'
+        + '<div class="thumb" style="background:linear-gradient(145deg,hsl(' + it.h + ',95%,93%),hsl(' + it.h + ',88%,84%))">' + it.e + '</div>'
+        + '<div class="info">'
+        +   '<div class="name">' + it.n[S.lang] + '</div>'
+        +   '<div class="desc">' + it.d[S.lang] + '</div>'
+        +   '<div class="price">' + money(it.p) + '</div>'
+        + '</div>' + act + '</article>';
+    }
+    if(!items.length) html = '<div class="empty">' + t.empty + '</div>';
+    html += '<div class="foot">' + t.note + '</div>';
+    $('#list').innerHTML = html;
+  }
+
+function renderBar(){
+    var t = L(), n = qty(), bar = $('#bar');
+    if(!n){ bar.className = 'bar'; bar.innerHTML = ''; return; }
+    bar.innerHTML = '<div class="cnt">' + n + ' ' + t.unit + '</div>'
+      + '<div class="sum"><span>' + t.total + '</span><b>' + money(total()) + '</b></div>'
+      + '<button class="go" data-act="cart">' + t.checkout + '</button>';
+    bar.className = 'bar show';
+  }
+
+var sheetOpen = false;
+
+function renderSheet(){
+    var t = L(), s = $('#sheet');
+    if(!sheetOpen){ s.className = 'sheet'; s.innerHTML = ''; $('#backdrop').className = 'backdrop'; return; }
+
+var html = '<div class="grab"></div>';
+
+if(S.order){
+      html += '<div class="done"><div class="tick">✓</div><h2>' + t.ordered + '</h2>'
+        + '<div class="no">' + t.no + ' · ' + S.order.no + '</div></div>';
+      html += '<div style="margin-top:18px">';
+      for(var i=0;i<S.order.items.length;i++){
+        var oi = S.order.items[i], it = find(oi.id);
+        if(!it) continue;
+        html += '<div class="row"><div class="rn">' + it.n[S.lang]
+          + '<div class="rp">' + oi.q + ' × ' + money(it.p) + '</div></div>'
+          + '<div class="rn" style="flex:0 0 auto;font-weight:600">' + money(it.poi.q) + '</div></div>';
+      }
+      html += '</div>';
+      html += '<div class="totrow"><span>' + t.total + '</span><b>' + money(S.order.total) + '</b></div>';
+      html += '<div class="actions"><button class="btn main" data-act="again">' + t.again + '</button></div>';
+      html += '<div class="note">' + t.note + '</div>';
+    } else {
+      html += '<h3>' + t.cart + '</h3>';
+      if(!qty()){
+        html += '<div class="empty" style="margin:26px 0 10px">' + t.emptyCart + '</div>';
+      } else {
+        for(var k in S.cart){
+          var it2 = find(k); if(!it2 || !S.cart[k]) continue;
+          html += '<div class="row"><div class="rn">' + it2.n[S.lang]
+            + '<div class="rp">' + money(it2.p) + '</div></div>'
+            + '<div class="stepper"><button data-act="dec" data-id="' + it2.id + '">−</button><span>' + S.cart[k] + '</span><button data-act="inc" data-id="' + it2.id + '">+</button></div></div>';
+        }
+        html += '<div class="totrow"><span>' + t.total + '</span><b>' + money(total()) + '</b></div>';
+        html += '<div class="actions"><button class="btn ghost" data-act="clear">' + t.clear + '</button>'
+          + '<button class="btn main" data-act="checkout">' + t.checkout + '</button></div>';
+      }
+    }
+    s.innerHTML = html;
+    s.className = 'sheet show';
+    $('#backdrop').className = 'backdrop show';
+  }
+
+function render(){
+    setTexts(); renderCats(); renderList(); renderBar(); renderSheet();
+  }
+
+var toastTimer = null;
+  function toast(msg){
+    var el = $('#toast');
+    el.textContent = msg;
+    el.className = 'toast show';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ el.className = 'toast'; }, 1500);
+  }
+
+function add(id, n){
+    var cur = S.cart[id] || 0;
+    var next = cur + n;
+    if(next <= 0){ delete S.cart[id]; }
+    else { S.cart[id] = next; }
+    save();
+    renderList(); renderBar();
+    if(sheetOpen) renderSheet();
+    if(n > 0){
+      var it = find(id);
+      toast(L().added + ' · ' + it.n[S.lang]);
+    }
+  }
+
+function openSheet(){ sheetOpen = true; renderSheet(); }
+  function closeSheet(){ sheetOpen = false; S.order = null; save(); renderSheet(); }
+
+function checkout(){
+    var items = [];
+    for(var k in S.cart){
+      if(S.cart[k] > 0) items.push({id:k, q:S.cart[k]});
+    }
+    if(!items.length) return;
+    S.order = {
+      no: 'A' + (1000 + Math.floor(Math.random()9000)),
+      items: items,
+      total: total()
+    };
+    S.cart = {};
+    save();
+    renderBar(); renderList(); renderSheet();
+  }
+
+document.addEventListener('click', function(e){
+    var el = e.target.closest ? e.target.closest('[data-act]') : null;
+    if(!el) return;
+    var act = el.getAttribute('data-act');
+    var id = el.getAttribute('data-id');
+
+if(act === 'lang'){
+      S.lang = el.getAttribute('data-lang') || 'zh';
+      save(); render();
+    } else if(act === 'cat'){
+      S.cat = id; save(); renderCats(); renderList();
+    } else if(act === 'add' || act === 'inc'){
+      add(id, 1);
+    } else if(act === 'dec'){
+      add(id, -1);
+    } else if(act === 'cart'){
+      openSheet();
+    } else if(act === 'close'){
+      closeSheet();
+    } else if(act === 'clear'){
+      S.cart = {}; save(); renderList(); renderBar(); renderSheet();
+    } else if(act === 'checkout'){
+      checkout();
+    } else if(act === 'again'){
+      S.cart = {}; S.order = null; save();
+      closeSheet(); renderList(); renderBar();
+    }
+  });
+
+$('#q').addEventListener('input', function(e){
+    S.q = e.target.value;
+    save();
+    renderList();
+  });
+
+load();
+  $('#q').value = S.q;
+  render();
+})();
+</script>
+</body>
+</html>
+```
