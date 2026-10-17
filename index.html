@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="zh-Hans">
 <head>
@@ -10,7 +9,7 @@
     --bg:#FFF7F0; --card:#FFFFFF; --ink:#2C211A; --ink2:#9A8577;
     --line:#F1E3D6; --accent:#EF6C33; --soft:#FFEBDE; --dark:#241A14;
   }
-  {box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0}
   body{
     font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
@@ -244,9 +243,9 @@
       d:{zh:'冷的，小小一碗',en:'Chilled, small bowl',id:'Dingin, mangkuk kecil'}}
   ];
 
-var CATS = ['all','main','snack','drink','dessert'];
+  var CATS = ['all','main','snack','drink','dessert'];
 
-var T = {
+  var T = {
     zh:{shop:'小巷食堂',tag:'今天想吃点什么',open:'营业中',search:'搜菜名，或者凭心情',
         all:'全部',main:'主食',snack:'小吃',drink:'饮料',dessert:'甜点',
         empty:'这个分类还是空的',cart:'购物车',emptyCart:'还没往篮子里放东西',
@@ -267,10 +266,10 @@ var T = {
         note:'Menu demo · tidak ada yang benar-benar dimasak atau diantar'}
   };
 
-var KEY = 'alley.order.v1';
+  var KEY = 'alley.order.v1';
   var S = {lang:'zh', cat:'all', q:'', cart:{}, order:null};
 
-function load(){
+  function load(){
     try{
       var raw = localStorage.getItem(KEY);
       if(raw){
@@ -298,12 +297,12 @@ function load(){
   }
   function qty(){ var s=0; for(var k in S.cart){ s += S.cart[k]||0; } return s; }
   function total(){
-    var s=0; for(var k in S.cart){ var it=find(k); if(it) s += it.pS.cart[k]; }
+    var s=0; for(var k in S.cart){ var it=find(k); if(it) s += it.p*S.cart[k]; }
     return s;
   }
   function $(sel){ return document.querySelector(sel); }
 
-function setTexts(){
+  function setTexts(){
     var t = L();
     $('#shop').textContent = t.shop;
     $('#tag').textContent = t.tag;
@@ -316,7 +315,7 @@ function setTexts(){
     }
   }
 
-function renderCats(){
+  function renderCats(){
     var t = L(), html = '';
     for(var i=0;i<CATS.length;i++){
       var c = CATS[i];
@@ -325,7 +324,7 @@ function renderCats(){
     $('#cats').innerHTML = html;
   }
 
-function visible(){
+  function visible(){
     var q = S.q.trim().toLowerCase(), out = [];
     for(var i=0;i<MENU.length;i++){
       var it = MENU[i];
@@ -339,7 +338,7 @@ function visible(){
     return out;
   }
 
-function renderList(){
+  function renderList(){
     var t = L(), items = visible(), html = '';
     for(var i=0;i<items.length;i++){
       var it = items[i], q = S.cart[it.id] || 0;
@@ -359,7 +358,7 @@ function renderList(){
     $('#list').innerHTML = html;
   }
 
-function renderBar(){
+  function renderBar(){
     var t = L(), n = qty(), bar = $('#bar');
     if(!n){ bar.className = 'bar'; bar.innerHTML = ''; return; }
     bar.innerHTML = '<div class="cnt">' + n + ' ' + t.unit + '</div>'
@@ -368,15 +367,15 @@ function renderBar(){
     bar.className = 'bar show';
   }
 
-var sheetOpen = false;
+  var sheetOpen = false;
 
-function renderSheet(){
+  function renderSheet(){
     var t = L(), s = $('#sheet');
     if(!sheetOpen){ s.className = 'sheet'; s.innerHTML = ''; $('#backdrop').className = 'backdrop'; return; }
 
-var html = '<div class="grab"></div>';
+    var html = '<div class="grab"></div>';
 
-if(S.order){
+    if(S.order){
       html += '<div class="done"><div class="tick">✓</div><h2>' + t.ordered + '</h2>'
         + '<div class="no">' + t.no + ' · ' + S.order.no + '</div></div>';
       html += '<div style="margin-top:18px">';
@@ -385,7 +384,7 @@ if(S.order){
         if(!it) continue;
         html += '<div class="row"><div class="rn">' + it.n[S.lang]
           + '<div class="rp">' + oi.q + ' × ' + money(it.p) + '</div></div>'
-          + '<div class="rn" style="flex:0 0 auto;font-weight:600">' + money(it.poi.q) + '</div></div>';
+          + '<div class="rn" style="flex:0 0 auto;font-weight:600">' + money(it.p*oi.q) + '</div></div>';
       }
       html += '</div>';
       html += '<div class="totrow"><span>' + t.total + '</span><b>' + money(S.order.total) + '</b></div>';
@@ -412,11 +411,11 @@ if(S.order){
     $('#backdrop').className = 'backdrop show';
   }
 
-function render(){
+  function render(){
     setTexts(); renderCats(); renderList(); renderBar(); renderSheet();
   }
 
-var toastTimer = null;
+  var toastTimer = null;
   function toast(msg){
     var el = $('#toast');
     el.textContent = msg;
@@ -425,7 +424,7 @@ var toastTimer = null;
     toastTimer = setTimeout(function(){ el.className = 'toast'; }, 1500);
   }
 
-function add(id, n){
+  function add(id, n){
     var cur = S.cart[id] || 0;
     var next = cur + n;
     if(next <= 0){ delete S.cart[id]; }
@@ -439,17 +438,17 @@ function add(id, n){
     }
   }
 
-function openSheet(){ sheetOpen = true; renderSheet(); }
+  function openSheet(){ sheetOpen = true; renderSheet(); }
   function closeSheet(){ sheetOpen = false; S.order = null; save(); renderSheet(); }
 
-function checkout(){
+  function checkout(){
     var items = [];
     for(var k in S.cart){
       if(S.cart[k] > 0) items.push({id:k, q:S.cart[k]});
     }
     if(!items.length) return;
     S.order = {
-      no: 'A' + (1000 + Math.floor(Math.random()9000)),
+      no: 'A' + (1000 + Math.floor(Math.random()*9000)),
       items: items,
       total: total()
     };
@@ -458,13 +457,13 @@ function checkout(){
     renderBar(); renderList(); renderSheet();
   }
 
-document.addEventListener('click', function(e){
+  document.addEventListener('click', function(e){
     var el = e.target.closest ? e.target.closest('[data-act]') : null;
     if(!el) return;
     var act = el.getAttribute('data-act');
     var id = el.getAttribute('data-id');
 
-if(act === 'lang'){
+    if(act === 'lang'){
       S.lang = el.getAttribute('data-lang') || 'zh';
       save(); render();
     } else if(act === 'cat'){
@@ -487,17 +486,16 @@ if(act === 'lang'){
     }
   });
 
-$('#q').addEventListener('input', function(e){
+  $('#q').addEventListener('input', function(e){
     S.q = e.target.value;
     save();
     renderList();
   });
 
-load();
+  load();
   $('#q').value = S.q;
   render();
 })();
 </script>
 </body>
 </html>
-```
